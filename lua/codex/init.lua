@@ -11,6 +11,11 @@ local M = {}
 
 local current_config = config.defaults()
 local commands_created = false
+local configured = false
+
+function M.is_configured()
+  return configured
+end
 
 local function resolve_workspace_root()
   return current_config.terminal and current_config.terminal.cwd or vim.loop.cwd()
@@ -103,6 +108,9 @@ function M.setup(opts)
       terminal.open(current_config.terminal.focus_on_open ~= false)
     end)
   end
+
+  configured = true
+  return current_config
 end
 
 function M.toggle()

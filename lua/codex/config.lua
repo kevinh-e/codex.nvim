@@ -3,12 +3,27 @@
 
 local M = {}
 
+local function default_terminal_cmd()
+  local env_path = vim.env.CODEX_CLI or vim.env.CODEX_BIN or vim.env.CODEX_PATH
+  if env_path and env_path ~= "" then
+    return { env_path }
+  end
+
+  local exepath = vim.fn.exepath("codex")
+  if exepath ~= nil and exepath ~= "" then
+    return { exepath }
+  end
+
+  -- Fall back to plain command; termopen will still try PATH
+  return { "codex" }
+end
+
 local defaults = {
   auto_start = false,
   log_level = "warn",
   terminal = {
     ---@type string|string[]|fun():string|string[]
-    cmd = { "codex" },
+    cmd = default_terminal_cmd,
     ---@type "vertical"|"horizontal"
     layout = "vertical",
     width = 50,

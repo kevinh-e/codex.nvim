@@ -8,13 +8,19 @@ if vim.g.loaded_codex then
 end
 vim.g.loaded_codex = 1
 
-if vim.g.codex_auto_setup then
-  vim.defer_fn(function()
-    require("codex").setup(vim.g.codex_auto_setup)
-  end, 0)
-end
-
-local ok, _ = pcall(require, "codex")
+local ok, codex = pcall(require, "codex")
 if not ok then
   vim.notify("codex.nvim failed to load. Check your installation.", vim.log.levels.ERROR)
+  return
+end
+
+local auto_opts = vim.g.codex_auto_setup
+if auto_opts ~= false then
+  local opts = type(auto_opts) == "table" and auto_opts or nil
+  vim.defer_fn(function()
+    if codex.is_configured and codex.is_configured() then
+      return
+    end
+    codex.setup(opts)
+  end, 0)
 end

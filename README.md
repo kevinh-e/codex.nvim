@@ -10,24 +10,41 @@ stream selections to Codex – all written in pure Lua.
 ```lua
 {
   "kevinh-e/codex.nvim",
-  config = function()
-    require("codex").setup({
-      auto_start = true,
-      terminal = {
-        cmd = { "codex" }, -- adjust to the Codex command you use locally
-      },
-    })
-  end,
+  dir = "/absolute/path/to/codex.nvim", -- drop if using the GitHub repo directly
+  opts = {
+    auto_start = true,
+    terminal = {
+      cmd = { "/usr/local/bin/codex" }, -- falls back to `vim.fn.exepath("codex")`
+    },
+  },
   keys = {
     { "<leader>cc", "<cmd>Codex<cr>", desc = "Toggle Codex" },
     { "<leader>cf", "<cmd>CodexFocus<cr>", desc = "Focus Codex terminal" },
     { "<leader>cs", "<cmd>'<,'>CodexSend<cr>", mode = "v", desc = "Send selection to Codex" },
     { "<leader>ca", "<cmd>CodexAdd %<cr>", desc = "Add current file to Codex" },
-  }
+  },
+}
 ```
 
 You need a working Codex CLI (`codex` in the example above). Change the command
 if you use a wrapper script or different executable.
+
+### Automatic setup
+
+The plugin now self-initialises with sensible defaults as soon as it is loaded.
+If you want to tweak those defaults _before_ Neovim starts, set
+`vim.g.codex_auto_setup` in your `init.lua`:
+
+```lua
+vim.g.codex_auto_setup = {
+  terminal = {
+    cmd = { "/path/to/codex-cli" },
+    layout = "horizontal",
+  },
+}
+```
+
+Set it to `false` if you prefer to call `require("codex").setup()` manually.
 
 ## Commands
 
@@ -62,6 +79,18 @@ require("codex").setup({
 
 The helper functions `require("codex").toggle()`, `.focus()`, `.send()` and
 `.mention()` are also available if you prefer mapping directly to Lua calls.
+
+### CLI path detection
+
+`codex.nvim` will resolve the Codex binary using the first match of:
+
+1. `vim.env.CODEX_CLI`, `CODEX_BIN`, or `CODEX_PATH`
+2. `vim.fn.exepath("codex")`
+3. Literal `"codex"` (letting your `$PATH` resolve it)
+
+If none of these work, a warning is emitted when you try to open the terminal.
+Override `terminal.cmd` to point at a custom script or pass additional CLI
+arguments.
 
 ## Roadmap
 

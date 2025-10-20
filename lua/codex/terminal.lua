@@ -20,6 +20,30 @@ local state = {
   winid = nil,
 }
 
+local function command_head(cmd)
+  if type(cmd) == "string" then
+    if cmd:find("%s") then
+      return cmd:match("^%S+")
+    end
+    return cmd
+  elseif type(cmd) == "table" then
+    return cmd[1]
+  end
+end
+
+local function format_command(cmd)
+  if type(cmd) == "string" then
+    return cmd
+  elseif type(cmd) == "table" then
+    local parts = {}
+    for _, part in ipairs(cmd) do
+      table.insert(parts, tostring(part))
+    end
+    return table.concat(parts, " ")
+  end
+  return "<invalid>"
+end
+
 ---@param config table
 ---@param mention table
 function M.setup(config, mention)
@@ -38,6 +62,18 @@ local function resolve_cmd()
   end
 
   if type(cmd) == "string" or type(cmd) == "table" then
+    local head = command_head(cmd)
+    if type(head) == "string" and head ~= "" then
+      if vim.fn.executable(head) == 0 then
+        logger.warn(
+          "terminal",
+          string.format(
+            "Codex command '%s' is not executable. Adjust terminal.cmd or export CODEX_CLI.",
+            format_command(cmd)
+          )
+        )
+      end
+    end
     return cmd, nil
   end
 
